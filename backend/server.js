@@ -19,6 +19,7 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 
 // ============ API ROUTES ============
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/progress', require('./routes/progress'));
 
 // Health check
 app.get('/api/health', (req, res) => {
