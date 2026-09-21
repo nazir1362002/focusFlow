@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – FocusFlow</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container" style="max-width: 700px; padding-top: 3rem;">
+    <h1 style="color:#38bdf8; margin-bottom: 0.5rem;">Welcome to FocusFlow</h1>
+    <p id="userName" style="color:#94a3b8; margin-bottom: 2rem;"></p>
+
+    <div style="background:#1e293b; padding:1.5rem; border-radius:12px; margin-bottom:1.5rem;">
+      <h2 style="margin-bottom:0.75rem;">Your Progress</h2>
+      <p id="progressInfo">Loading...</p>
+    </div>
+
+    <button class="btn" style="width:auto; padding:0.7rem 1.5rem;" onclick="logout()">Logout</button>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth(); // redirect to login if not logged in
+
+    const user = getUser();
+    document.getElementById('userName').textContent = `Hello, ${user?.name || 'User'}!`;
+
+    // Load progress
+    async function loadProgress() {
+      try {
+        const progress = await apiRequest('/api/progress');
+        document.getElementById('progressInfo').innerHTML = `
+          Current Day: <strong>${progress.currentDay}</strong><br>
+          Completed Days: ${progress.completedDays.length ? progress.completedDays.join(', ') : 'None yet'}
+        `;
+      } catch (err) {
+        document.getElementById('progressInfo').textContent = 'Could not load progress.';
+      }
+    }
+
+    loadProgress();
+
+    function logout() {
+      removeToken();
+      window.location.href = '/login.html';
+    }
+  </script>
+</body>
+</html>

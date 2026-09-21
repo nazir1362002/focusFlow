@@ -1,16 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FocusFlow</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusFlow – Build Better Focus in 7 Days</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <div class="container">
+  <div class="landing">
     <h1>FocusFlow</h1>
-    <p>Build Better Focus in 7 Days</p>
-    <p>Backend is connected successfully if you can see this page.</p>
+    <p class="tagline">Build Better Focus in 7 Days</p>
+    <p class="description">
+      Understand what matters. Remove distractions. Focus on high-impact work.
+      An interactive system that guides you through a structured 7-day journey
+      and generates a personalized Focus Blueprint using AI.
+    </p>
+
+    <div class="landing-buttons">
+      <a href="/register.html" class="btn btn-secondary">Start 7-Day Journey</a>
+      <a href="/login.html" class="btn btn-outline btn-secondary">Login</a>
+    </div>
   </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    // If already logged in, go to dashboard
+    if (isLoggedIn()) {
+      window.location.href = '/dashboard.html';
+    }
+  </script>
 </body>
 </html>

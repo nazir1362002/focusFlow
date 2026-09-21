@@ -5,27 +5,181 @@
 }
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: #0f172a;
   color: #f1f5f9;
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  line-height: 1.5;
+}
+
+a {
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 .container {
-  text-align: center;
-  padding: 2rem;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
 }
 
-h1 {
-  font-size: 3rem;
+/* ===== Auth Pages ===== */
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+
+.auth-card {
+  background: #1e293b;
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.auth-card h1 {
+  font-size: 1.8rem;
   margin-bottom: 0.5rem;
+  color: #38bdf8;
+  text-align: center;
+}
+
+.auth-card .subtitle {
+  text-align: center;
+  color: #94a3b8;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #f1f5f9;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+
+.btn {
+  display: inline-block;
+  width: 100%;
+  padding: 0.85rem;
+  background: #38bdf8;
+  color: #0f172a;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn:hover {
+  background: #0ea5e9;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.error-message {
+  background: #7f1d1d;
+  color: #fecaca;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+  display: none;
+}
+
+.success-message {
+  background: #14532d;
+  color: #bbf7d0;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+  display: none;
+}
+
+/* ===== Landing Page ===== */
+.landing {
+  text-align: center;
+  padding: 4rem 1.5rem;
+}
+
+.landing h1 {
+  font-size: 3rem;
+  color: #38bdf8;
+  margin-bottom: 0.75rem;
+}
+
+.landing .tagline {
+  font-size: 1.4rem;
+  color: #e2e8f0;
+  margin-bottom: 1.5rem;
+}
+
+.landing .description {
+  max-width: 520px;
+  margin: 0 auto 2.5rem;
+  color: #94a3b8;
+  font-size: 1.05rem;
+}
+
+.landing-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid #38bdf8;
   color: #38bdf8;
 }
 
-p {
-  font-size: 1.2rem;
-  opacity: 0.9;
+.btn-outline:hover {
+  background: #38bdf8;
+  color: #0f172a;
+}
+
+.btn-secondary {
+  width: auto;
+  padding: 0.85rem 1.75rem;
 }
