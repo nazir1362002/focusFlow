@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 2 – Goal Clarity | FocusFlow</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .day-header { margin-bottom: 2rem; }
+    .day-header h1 { color: #38bdf8; font-size: 1.8rem; margin-bottom: 0.3rem; }
+    
+    .goal-form {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .goal-form h3 { margin-bottom: 1rem; }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+    
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; margin-bottom: 0.35rem; color: #cbd5e1; font-size: 0.9rem; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    .form-group textarea { min-height: 70px; resize: vertical; }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .goals-list { margin-bottom: 2rem; }
+    .goal-item {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 1.1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      border-left: 4px solid #334155;
+    }
+    .goal-item.priority { border-left-color: #f59e0b; }
+    .goal-item.completed { opacity: 0.6; }
+    
+    .goal-info h4 { margin-bottom: 0.25rem; }
+    .goal-meta { font-size: 0.8rem; color: #94a3b8; }
+    .goal-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+    
+    .btn-sm {
+      padding: 0.35rem 0.7rem;
+      font-size: 0.8rem;
+      width: auto;
+      border-radius: 6px;
+    }
+    .btn-danger { background: #7f1d1d; color: #fecaca; }
+    .btn-danger:hover { background: #991b1b; }
+    .btn-outline-sm {
+      background: transparent;
+      border: 1px solid #475569;
+      color: #e2e8f0;
+    }
+    
+    .actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+    .btn-secondary-outline {
+      background: transparent;
+      border: 2px solid #64748b;
+      color: #e2e8f0;
+      width: auto;
+      padding: 0.75rem 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 750px; padding-top: 2rem; padding-bottom: 3rem;">
+    
+    <div class="day-header">
+      <a href="/dashboard.html" style="color:#94a3b8; font-size:0.9rem;">← Back to Dashboard</a>
+      <h1>Day 2 – Goal Clarity</h1>
+      <p style="color:#94a3b8;">Define clear, meaningful goals that will guide your focus.</p>
+    </div>
+
+    <div id="error" class="error-message"></div>
+    <div id="success" class="success-message"></div>
+
+    <!-- Add Goal Form -->
+    <div class="goal-form">
+      <h3>Add a New Goal</h3>
+      <form id="goalForm">
+        <div class="form-group">
+          <label>Goal Title *</label>
+          <input type="text" id="title" placeholder="e.g. Become a Full-Stack Developer" required />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Category</label>
+            <select id="category">
+              <option value="Career">Career</option>
+              <option value="Learning">Learning</option>
+              <option value="Financial">Financial</option>
+              <option value="Health">Health</option>
+              <option value="Personal">Personal</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <div class="checkbox-group">
+              <input type="checkbox" id="isPriority" />
+              <label for="isPriority" style="margin:0;">Mark as Priority Goal</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Description (optional)</label>
+          <textarea id="description" placeholder="Why is this goal important to you?"></textarea>
+        </div>
+
+        <button type="submit" class="btn" style="width:auto; padding:0.7rem 1.5rem;">Add Goal</button>
+      </form>
+    </div>
+
+    <!-- Goals List -->
+    <h3 style="margin-bottom:1rem;">Your Goals</h3>
+    <div class="goals-list" id="goalsList">
+      <p style="color:#64748b;">No goals yet. Add your first goal above.</p>
+    </div>
+
+    <!-- Complete Day -->
+    <div class="actions">
+      <button class="btn btn-secondary-outline" onclick="window.location.href='/dashboard.html'">Save & Exit</button>
+      <button class="btn" id="completeBtn" style="width:auto; padding:0.75rem 1.8rem;" onclick="completeDay2()">
+        Complete Day 2
+      </button>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    const errorDiv = document.getElementById('error');
+    const successDiv = document.getElementById('success');
+    let goals = [];
+
+    // Load goals
+    async function loadGoals() {
+      try {
+        // Check if day is accessible
+        const progress = await apiRequest('/api/progress');
+        if (progress.currentDay < 2 && !progress.completedDays.includes(2)) {
+          alert('Complete Day 1 first.');
+          window.location.href = '/dashboard.html';
+          return;
+        }
+
+        goals = await apiRequest('/api/goals');
+        renderGoals();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderGoals() {
+      const list = document.getElementById('goalsList');
+      
+      if (goals.length === 0) {
+        list.innerHTML = '<p style="color:#64748b;">No goals yet. Add your first goal above.</p>';
+        return;
+      }
+
+      list.innerHTML = goals.map(goal => `
+        <div class="goal-item ${goal.isPriority ? 'priority' : ''} ${goal.isCompleted ? 'completed' : ''}">
+          <div class="goal-info">
+            <h4>${goal.title} ${goal.isPriority ? '⭐' : ''}</h4>
+            <div class="goal-meta">
+              ${goal.category} ${goal.description ? '• ' + goal.description : ''}
+            </div>
+          </div>
+          <div class="goal-actions">
+            <button class="btn btn-sm btn-outline-sm" onclick="togglePriority('${goal._id}', ${!goal.isPriority})">
+              ${goal.isPriority ? 'Unmark Priority' : 'Make Priority'}
+            </button>
+            <button class="btn btn-sm btn-danger" onclick="deleteGoal('${goal._id}')">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Add Goal
+    document.getElementById('goalForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorDiv.style.display = 'none';
+
+      const title = document.getElementById('title').value.trim();
+      const category = document.getElementById('category').value;
+      const description = document.getElementById('description').value.trim();
+      const isPriority = document.getElementById('isPriority').checked;
+
+      try {
+        const newGoal = await apiRequest('/api/goals', {
+          method: 'POST',
+          body: { title, category, description, isPriority }
+        });
+
+        goals.unshift(newGoal);
+        renderGoals();
+
+        // Reset form
+        document.getElementById('goalForm').reset();
+        
+        successDiv.textContent = 'Goal added!';
+        successDiv.style.display = 'block';
+        setTimeout(() => successDiv.style.display = 'none', 2000);
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.style.display = 'block';
+      }
+    });
+
+    // Toggle Priority
+    async function togglePriority(id, isPriority) {
+      try {
+        const updated = await apiRequest(`/api/goals/${id}`, {
+          method: 'PUT',
+          body: { isPriority }
+        });
+        goals = goals.map(g => g._id === id ? updated : g);
+        renderGoals();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // Delete Goal
+    async function deleteGoal(id) {
+      if (!confirm('Delete this goal?')) return;
+      try {
+        await apiRequest(`/api/goals/${id}`, { method: 'DELETE' });
+        goals = goals.filter(g => g._id !== id);
+        renderGoals();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // Complete Day 2
+    async function completeDay2() {
+      if (goals.length === 0) {
+        errorDiv.textContent = 'Please add at least one goal before completing Day 2.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      const completeBtn = document.getElementById('completeBtn');
+      completeBtn.disabled = true;
+      completeBtn.textContent = 'Saving...';
+
+      try {
+        await apiRequest('/api/progress/complete-day', {
+          method: 'PUT',
+          body: {
+            day: 2,
+            dayData: {
+              totalGoals: goals.length,
+              priorityGoals: goals.filter(g => g.isPriority).length,
+              categories: [...new Set(goals.map(g => g.category))]
+            }
+          }
+        });
+
+        successDiv.textContent = 'Day 2 completed! Redirecting...';
+        successDiv.style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1200);
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.style.display = 'block';
+        completeBtn.disabled = false;
+        completeBtn.textContent = 'Complete Day 2';
+      }
+    }
+
+    loadGoals();
+  </script>
+</body>
+</html>

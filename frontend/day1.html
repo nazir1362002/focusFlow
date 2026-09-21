@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 1 – Self Discovery | FocusFlow</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .day-header {
+      margin-bottom: 2rem;
+    }
+    .day-header h1 {
+      color: #38bdf8;
+      font-size: 1.8rem;
+      margin-bottom: 0.3rem;
+    }
+    .question-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .question-card h3 {
+      margin-bottom: 0.75rem;
+      font-size: 1.05rem;
+    }
+    .question-card textarea,
+    .question-card select,
+    .question-card input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    .question-card textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+    .actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+    .btn-secondary-outline {
+      background: transparent;
+      border: 2px solid #64748b;
+      color: #e2e8f0;
+      width: auto;
+      padding: 0.75rem 1.5rem;
+    }
+    .btn-secondary-outline:hover {
+      border-color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 700px; padding-top: 2rem; padding-bottom: 3rem;">
+    
+    <div class="day-header">
+      <a href="/dashboard.html" style="color:#94a3b8; font-size:0.9rem;">← Back to Dashboard</a>
+      <h1>Day 1 – Self Discovery</h1>
+      <p style="color:#94a3b8;">Understand where you are right now and why focus matters to you.</p>
+    </div>
+
+    <div id="error" class="error-message"></div>
+    <div id="success" class="success-message"></div>
+
+    <form id="day1Form">
+      <!-- Question 1 -->
+      <div class="question-card">
+        <h3>1. What is the main reason you want to improve your focus?</h3>
+        <textarea id="mainReason" placeholder="e.g. I want to finish my projects on time, reduce anxiety, get better grades..." required></textarea>
+      </div>
+
+      <!-- Question 2 -->
+      <div class="question-card">
+        <h3>2. On a scale of 1–10, how would you rate your current focus level?</h3>
+        <select id="focusLevel" required>
+          <option value="">Select a number</option>
+          <option value="1">1 – Extremely distracted</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5 – Average</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10 – Laser focused</option>
+        </select>
+      </div>
+
+      <!-- Question 3 -->
+      <div class="question-card">
+        <h3>3. What is your biggest distraction right now?</h3>
+        <input type="text" id="biggestDistraction" placeholder="e.g. Social media, YouTube, phone notifications, overthinking..." required />
+      </div>
+
+      <!-- Question 4 -->
+      <div class="question-card">
+        <h3>4. What does “better focus” look like for you in 7 days?</h3>
+        <textarea id="vision" placeholder="Describe the ideal outcome after completing this journey..." required></textarea>
+      </div>
+
+      <!-- Question 5 -->
+      <div class="question-card">
+        <h3>5. How many hours per day do you currently spend on focused deep work?</h3>
+        <select id="deepWorkHours" required>
+          <option value="">Select</option>
+          <option value="0">Less than 1 hour</option>
+          <option value="1">1–2 hours</option>
+          <option value="2">2–3 hours</option>
+          <option value="3">3–4 hours</option>
+          <option value="4">More than 4 hours</option>
+        </select>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn btn-secondary-outline" onclick="saveDraft()">Save Draft</button>
+        <button type="submit" class="btn" id="submitBtn" style="width:auto; padding:0.75rem 1.8rem;">
+          Complete Day 1
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    const form = document.getElementById('day1Form');
+    const errorDiv = document.getElementById('error');
+    const successDiv = document.getElementById('success');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Load existing data if any
+    async function loadExistingData() {
+      try {
+        const progress = await apiRequest('/api/progress');
+
+        // Prevent access if day is locked
+        if (progress.currentDay < 1 && !progress.completedDays.includes(1)) {
+          alert('This day is locked.');
+          window.location.href = '/dashboard.html';
+          return;
+        }
+
+        const data = progress.dayData?.day1 || {};
+        if (data.mainReason) document.getElementById('mainReason').value = data.mainReason;
+        if (data.focusLevel) document.getElementById('focusLevel').value = data.focusLevel;
+        if (data.biggestDistraction) document.getElementById('biggestDistraction').value = data.biggestDistraction;
+        if (data.vision) document.getElementById('vision').value = data.vision;
+        if (data.deepWorkHours) document.getElementById('deepWorkHours').value = data.deepWorkHours;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Save as draft (without completing)
+    async function saveDraft() {
+      const dayData = getFormData();
+      try {
+        await apiRequest('/api/progress/save-day-data', {
+          method: 'PUT',
+          body: { day: 1, dayData }
+        });
+        successDiv.textContent = 'Draft saved successfully!';
+        successDiv.style.display = 'block';
+        setTimeout(() => successDiv.style.display = 'none', 2500);
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.style.display = 'block';
+      }
+    }
+
+    function getFormData() {
+      return {
+        mainReason: document.getElementById('mainReason').value.trim(),
+        focusLevel: document.getElementById('focusLevel').value,
+        biggestDistraction: document.getElementById('biggestDistraction').value.trim(),
+        vision: document.getElementById('vision').value.trim(),
+        deepWorkHours: document.getElementById('deepWorkHours').value
+      };
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+
+      const dayData = getFormData();
+
+      try {
+        await apiRequest('/api/progress/complete-day', {
+          method: 'PUT',
+          body: { day: 1, dayData }
+        });
+
+        successDiv.textContent = 'Day 1 completed! Redirecting to Dashboard...';
+        successDiv.style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1200);
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Complete Day 1';
+      }
+    });
+
+    loadExistingData();
+  </script>
+</body>
+</html>
