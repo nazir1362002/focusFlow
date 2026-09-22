@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 3 – Action Planner | FocusFlow</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .day-header { margin-bottom: 2rem; }
+    .day-header h1 { color: #38bdf8; font-size: 1.8rem; margin-bottom: 0.3rem; }
+
+    .goal-section {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .goal-section h3 {
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .goal-category {
+      font-size: 0.75rem;
+      background: #334155;
+      color: #94a3b8;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+    }
+
+    .action-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #334155;
+    }
+    .action-item:last-child { border-bottom: none; }
+    .action-item.completed .action-title {
+      text-decoration: line-through;
+      color: #64748b;
+    }
+
+    .action-title { flex: 1; }
+    .action-actions { display: flex; gap: 0.4rem; }
+
+    .btn-sm {
+      padding: 0.3rem 0.65rem;
+      font-size: 0.78rem;
+      width: auto;
+      border-radius: 6px;
+    }
+    .btn-outline-sm {
+      background: transparent;
+      border: 1px solid #475569;
+      color: #e2e8f0;
+    }
+    .btn-danger { background: #7f1d1d; color: #fecaca; }
+
+    .add-action-form {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.9rem;
+    }
+    .add-action-form input {
+      flex: 1;
+      padding: 0.6rem 0.9rem;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+    }
+
+    .actions-footer {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+    .btn-secondary-outline {
+      background: transparent;
+      border: 2px solid #64748b;
+      color: #e2e8f0;
+      width: auto;
+      padding: 0.75rem 1.5rem;
+    }
+
+    .empty-state {
+      color: #64748b;
+      text-align: center;
+      padding: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 750px; padding-top: 2rem; padding-bottom: 3rem;">
+    
+    <div class="day-header">
+      <a href="/dashboard.html" style="color:#94a3b8; font-size:0.9rem;">← Back to Dashboard</a>
+      <h1>Day 3 – Action Planner</h1>
+      <p style="color:#94a3b8;">Turn your goals into clear, actionable steps.</p>
+    </div>
+
+    <div id="error" class="error-message"></div>
+    <div id="success" class="success-message"></div>
+
+    <div id="goalsContainer">
+      <p class="empty-state">Loading goals...</p>
+    </div>
+
+    <div class="actions-footer">
+      <button class="btn btn-secondary-outline" onclick="window.location.href='/dashboard.html'">Save & Exit</button>
+      <button class="btn" id="completeBtn" style="width:auto; padding:0.75rem 1.8rem;" onclick="completeDay3()">
+        Complete Day 3
+      </button>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    let goals = [];
+    let actions = [];
+
+    async function loadData() {
+      try {
+        // Access check
+        const progress = await apiRequest('/api/progress');
+        if (progress.currentDay < 3 && !progress.completedDays.includes(3)) {
+          alert('Complete previous days first.');
+          window.location.href = '/dashboard.html';
+          return;
+        }
+
+        goals = await apiRequest('/api/goals');
+        actions = await apiRequest('/api/actions');
+
+        render();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('goalsContainer').innerHTML = 
+          '<p class="empty-state">Failed to load data. Please refresh.</p>';
+      }
+    }
+
+    function render() {
+      const container = document.getElementById('goalsContainer');
+
+      if (goals.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <p>You have no goals yet.</p>
+            <p style="margin-top:0.5rem;">Go back to <a href="/day2.html">Day 2</a> and create some goals first.</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = goals.map(goal => {
+        const goalActions = actions.filter(a => a.goal && a.goal._id === goal._id);
+
+        return `
+          <div class="goal-section">
+            <h3>
+              <span>${goal.title} ${goal.isPriority ? '⭐' : ''}</span>
+              <span class="goal-category">${goal.category}</span>
+            </h3>
+
+            <div class="actions-list">
+              ${goalActions.length === 0 
+                ? '<p style="color:#64748b; font-size:0.9rem;">No actions yet. Add one below.</p>'
+                : goalActions.map(action => `
+                    <div class="action-item ${action.isCompleted ? 'completed' : ''}">
+                      <input type="checkbox" 
+                             ${action.isCompleted ? 'checked' : ''} 
+                             onchange="toggleAction('${action._id}', this.checked)" />
+                      <span class="action-title">${action.title}</span>
+                      <div class="action-actions">
+                        <button class="btn btn-sm btn-danger" onclick="deleteAction('${action._id}')">Delete</button>
+                      </div>
+                    </div>
+                  `).join('')
+              }
+            </div>
+
+            <div class="add-action-form">
+              <input type="text" id="input-${goal._id}" placeholder="Add a new action..." />
+              <button class="btn btn-sm" style="width:auto;" onclick="addAction('${goal._id}')">Add</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function addAction(goalId) {
+      const input = document.getElementById(`input-${goalId}`);
+      const title = input.value.trim();
+      if (!title) return;
+
+      try {
+        const newAction = await apiRequest('/api/actions', {
+          method: 'POST',
+          body: { goalId, title }
+        });
+        actions.push(newAction);
+        input.value = '';
+        render();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function toggleAction(id, isCompleted) {
+      try {
+        const updated = await apiRequest(`/api/actions/${id}`, {
+          method: 'PUT',
+          body: { isCompleted }
+        });
+        actions = actions.map(a => a._id === id ? updated : a);
+        render();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function deleteAction(id) {
+      if (!confirm('Delete this action?')) return;
+      try {
+        await apiRequest(`/api/actions/${id}`, { method: 'DELETE' });
+        actions = actions.filter(a => a._id !== id);
+        render();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function completeDay3() {
+      if (actions.length === 0) {
+        document.getElementById('error').textContent = 'Please add at least one action before completing Day 3.';
+        document.getElementById('error').style.display = 'block';
+        return;
+      }
+
+      const btn = document.getElementById('completeBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        await apiRequest('/api/progress/complete-day', {
+          method: 'PUT',
+          body: {
+            day: 3,
+            dayData: {
+              totalActions: actions.length,
+              completedActions: actions.filter(a => a.isCompleted).length,
+              goalsWithActions: [...new Set(actions.map(a => a.goal?._id))].length
+            }
+          }
+        });
+
+        document.getElementById('success').textContent = 'Day 3 completed! Redirecting...';
+        document.getElementById('success').style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1200);
+      } catch (err) {
+        document.getElementById('error').textContent = err.message;
+        document.getElementById('error').style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Complete Day 3';
+      }
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
