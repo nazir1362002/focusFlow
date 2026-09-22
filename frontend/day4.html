@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 4 – 80/20 Task Analyzer | FocusFlow</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .day-header { margin-bottom: 2rem; }
+    .day-header h1 { color: #38bdf8; font-size: 1.8rem; margin-bottom: 0.3rem; }
+
+    .task-form {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 0.75rem;
+      align-items: end;
+    }
+    @media (max-width: 700px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+    }
+
+    .analysis-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 600px) {
+      .analysis-box { grid-template-columns: 1fr; }
+    }
+    .analysis-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    .analysis-card h3 { margin-bottom: 0.75rem; font-size: 1rem; }
+    .high { border-left: 4px solid #22c55e; }
+    .low { border-left: 4px solid #ef4444; }
+
+    .task-item {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .task-item.high { border-left: 4px solid #22c55e; }
+    .task-item.medium { border-left: 4px solid #eab308; }
+    .task-item.low { border-left: 4px solid #ef4444; }
+
+    .task-meta { font-size: 0.85rem; color: #94a3b8; }
+    .btn-sm {
+      padding: 0.3rem 0.7rem;
+      font-size: 0.8rem;
+      width: auto;
+      border-radius: 6px;
+    }
+    .btn-danger { background: #7f1d1d; color: #fecaca; }
+
+    .actions-footer {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+    .btn-secondary-outline {
+      background: transparent;
+      border: 2px solid #64748b;
+      color: #e2e8f0;
+      width: auto;
+      padding: 0.75rem 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 800px; padding-top: 2rem; padding-bottom: 3rem;">
+    
+    <div class="day-header">
+      <a href="/dashboard.html" style="color:#94a3b8; font-size:0.9rem;">← Back to Dashboard</a>
+      <h1>Day 4 – 80/20 Task Analyzer</h1>
+      <p style="color:#94a3b8;">Identify which tasks give you the highest impact for your time.</p>
+    </div>
+
+    <div id="error" class="error-message"></div>
+    <div id="success" class="success-message"></div>
+
+    <!-- Add Task Form -->
+    <div class="task-form">
+      <h3 style="margin-bottom:1rem;">Add a Task</h3>
+      <form id="taskForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Task Name</label>
+            <input type="text" id="title" placeholder="e.g. Build portfolio project" required />
+          </div>
+          <div class="form-group">
+            <label>Est. Hours</label>
+            <input type="number" id="estimatedTime" min="0.5" step="0.5" placeholder="2" required />
+          </div>
+          <div class="form-group">
+            <label>Impact</label>
+            <select id="impact" required>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+          <button type="submit" class="btn" style="width:auto; padding:0.65rem 1.2rem;">Add</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Analysis Summary -->
+    <div class="analysis-box" id="analysisBox" style="display:none;">
+      <div class="analysis-card high">
+        <h3>High-Impact Activities</h3>
+        <div id="highList"></div>
+        <p style="margin-top:0.75rem; color:#86efac; font-size:0.9rem;" id="highStats"></p>
+      </div>
+      <div class="analysis-card low">
+        <h3>Low-Impact Activities</h3>
+        <div id="lowList"></div>
+        <p style="margin-top:0.75rem; color:#fca5a5; font-size:0.9rem;" id="lowStats"></p>
+      </div>
+    </div>
+
+    <!-- All Tasks -->
+    <h3 style="margin-bottom:1rem;">All Tasks</h3>
+    <div id="tasksList">
+      <p style="color:#64748b;">No tasks yet. Add your first task above.</p>
+    </div>
+
+    <div class="actions-footer">
+      <button class="btn btn-secondary-outline" onclick="window.location.href='/dashboard.html'">Save & Exit</button>
+      <button class="btn" id="completeBtn" style="width:auto; padding:0.75rem 1.8rem;" onclick="completeDay4()">
+        Complete Day 4
+      </button>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    let tasks = [];
+
+    async function loadTasks() {
+      try {
+        const progress = await apiRequest('/api/progress');
+        if (progress.currentDay < 4 && !progress.completedDays.includes(4)) {
+          alert('Complete previous days first.');
+          window.location.href = '/dashboard.html';
+          return;
+        }
+
+        tasks = await apiRequest('/api/tasks');
+        renderTasks();
+        if (tasks.length > 0) loadAnalysis();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderTasks() {
+      const list = document.getElementById('tasksList');
+      if (tasks.length === 0) {
+        list.innerHTML = '<p style="color:#64748b;">No tasks yet. Add your first task above.</p>';
+        return;
+      }
+
+      // Sort: High → Medium → Low
+      const order = { High: 1, Medium: 2, Low: 3 };
+      const sorted = [...tasks].sort((a, b) => order[a.impact] - order[b.impact]);
+
+      list.innerHTML = sorted.map(task => `
+        <div class="task-item ${task.impact.toLowerCase()}">
+          <div>
+            <strong>${task.title}</strong>
+            <div class="task-meta">${task.estimatedTime}h • ${task.impact} Impact</div>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="deleteTask('${task._id}')">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    async function loadAnalysis() {
+      try {
+        const analysis = await apiRequest('/api/tasks/analysis');
+        document.getElementById('analysisBox').style.display = 'grid';
+
+        document.getElementById('highList').innerHTML = analysis.highImpact.length
+          ? analysis.highImpact.map(t => `<div>• ${t.title}</div>`).join('')
+          : '<div style="color:#64748b;">None yet</div>';
+
+        document.getElementById('lowList').innerHTML = analysis.lowImpact.length
+          ? analysis.lowImpact.map(t => `<div>• ${t.title}</div>`).join('')
+          : '<div style="color:#64748b;">None yet</div>';
+
+        document.getElementById('highStats').textContent = 
+          `${analysis.highImpact.length} tasks • ${analysis.highTime}h (${analysis.highPercentage}% of time)`;
+        document.getElementById('lowStats').textContent = 
+          `${analysis.lowImpact.length} tasks • ${analysis.lowTime}h (${analysis.lowPercentage}% of time)`;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Add Task
+    document.getElementById('taskForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('title').value.trim();
+      const estimatedTime = document.getElementById('estimatedTime').value;
+      const impact = document.getElementById('impact').value;
+
+      try {
+        const newTask = await apiRequest('/api/tasks', {
+          method: 'POST',
+          body: { title, estimatedTime, impact }
+        });
+        tasks.push(newTask);
+        document.getElementById('taskForm').reset();
+        renderTasks();
+        loadAnalysis();
+      } catch (err) {
+        document.getElementById('error').textContent = err.message;
+        document.getElementById('error').style.display = 'block';
+      }
+    });
+
+    async function deleteTask(id) {
+      if (!confirm('Delete this task?')) return;
+      try {
+        await apiRequest(`/api/tasks/${id}`, { method: 'DELETE' });
+        tasks = tasks.filter(t => t._id !== id);
+        renderTasks();
+        if (tasks.length > 0) loadAnalysis();
+        else document.getElementById('analysisBox').style.display = 'none';
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function completeDay4() {
+      if (tasks.length === 0) {
+        document.getElementById('error').textContent = 'Please add at least a few tasks before completing Day 4.';
+        document.getElementById('error').style.display = 'block';
+        return;
+      }
+
+      const btn = document.getElementById('completeBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const analysis = await apiRequest('/api/tasks/analysis');
+
+        await apiRequest('/api/progress/complete-day', {
+          method: 'PUT',
+          body: {
+            day: 4,
+            dayData: {
+              totalTasks: analysis.totalTasks,
+              highImpactCount: analysis.highImpact.length,
+              lowImpactCount: analysis.lowImpact.length,
+              highPercentage: analysis.highPercentage,
+              lowPercentage: analysis.lowPercentage
+            }
+          }
+        });
+
+        document.getElementById('success').textContent = 'Day 4 completed! Redirecting...';
+        document.getElementById('success').style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1200);
+      } catch (err) {
+        document.getElementById('error').textContent = err.message;
+        document.getElementById('error').style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Complete Day 4';
+      }
+    }
+
+    loadTasks();
+  </script>
+</body>
+</html>
