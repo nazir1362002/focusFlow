@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 5 – Focus Timer | FocusFlow</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .day-header { margin-bottom: 2rem; }
+    .day-header h1 { color: #38bdf8; font-size: 1.8rem; margin-bottom: 0.3rem; }
+
+    .timer-card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .timer-display {
+      font-size: 4.5rem;
+      font-weight: 700;
+      color: #38bdf8;
+      margin: 1.5rem 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-timer {
+      width: auto;
+      padding: 0.7rem 1.4rem;
+      font-size: 0.95rem;
+    }
+
+    .btn-danger { background: #7f1d1d; color: #fecaca; }
+    .btn-danger:hover { background: #991b1b; }
+    .btn-success { background: #166534; color: #bbf7d0; }
+    .btn-success:hover { background: #15803d; }
+
+    .setup-form {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+    @media (max-width: 600px) {
+      .setup-form { grid-template-columns: 1fr; }
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+    }
+
+    .interruption-box {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #334155;
+    }
+
+    .session-list {
+      margin-top: 2rem;
+    }
+    .session-item {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .session-meta { font-size: 0.85rem; color: #94a3b8; }
+
+    .actions-footer {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+    .btn-secondary-outline {
+      background: transparent;
+      border: 2px solid #64748b;
+      color: #e2e8f0;
+      width: auto;
+      padding: 0.75rem 1.5rem;
+    }
+
+    .status-text {
+      color: #94a3b8;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 700px; padding-top: 2rem; padding-bottom: 3rem;">
+    
+    <div class="day-header">
+      <a href="/dashboard.html" style="color:#94a3b8; font-size:0.9rem;">← Back to Dashboard</a>
+      <h1>Day 5 – Focus Timer</h1>
+      <p style="color:#94a3b8;">Practice deep work and track interruptions.</p>
+    </div>
+
+    <div id="error" class="error-message"></div>
+    <div id="success" class="success-message"></div>
+
+    <!-- Timer Card -->
+    <div class="timer-card">
+      <div class="setup-form" id="setupForm">
+        <div class="form-group">
+          <label>What will you focus on?</label>
+          <input type="text" id="taskInput" placeholder="e.g. Build JavaScript project" />
+        </div>
+        <div class="form-group">
+          <label>Duration</label>
+          <select id="durationSelect">
+            <option value="25">25 minutes</option>
+            <option value="50" selected>50 minutes</option>
+            <option value="90">90 minutes</option>
+            <option value="15">15 minutes (quick test)</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="status-text" id="statusText">Ready to start</p>
+      <div class="timer-display" id="timerDisplay">50:00</div>
+
+      <div class="timer-controls">
+        <button class="btn btn-timer btn-success" id="startBtn" onclick="startTimer()">Start Focus</button>
+        <button class="btn btn-timer" id="pauseBtn" onclick="pauseTimer()" style="display:none;">Pause</button>
+        <button class="btn btn-timer" id="resumeBtn" onclick="resumeTimer()" style="display:none;">Resume</button>
+        <button class="btn btn-timer btn-danger" id="stopBtn" onclick="stopTimer()" style="display:none;">End Session</button>
+      </div>
+
+      <div class="interruption-box" id="interruptionBox" style="display:none;">
+        <p style="margin-bottom:0.75rem;">Interruptions: <strong id="interruptCount">0</strong></p>
+        <button class="btn btn-timer" style="background:#b45309; color:white;" onclick="addInterruption()">
+          + Record Interruption
+        </button>
+      </div>
+    </div>
+
+    <!-- Previous Sessions -->
+    <h3 style="margin-bottom:1rem;">Your Focus Sessions</h3>
+    <div class="session-list" id="sessionList">
+      <p style="color:#64748b;">No sessions yet.</p>
+    </div>
+
+    <div class="actions-footer">
+      <button class="btn btn-secondary-outline" onclick="window.location.href='/dashboard.html'">Save & Exit</button>
+      <button class="btn" id="completeBtn" style="width:auto; padding:0.75rem 1.8rem;" onclick="completeDay5()">
+        Complete Day 5
+      </button>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    let timerInterval = null;
+    let totalSeconds = 50 * 60;
+    let remainingSeconds = totalSeconds;
+    let isRunning = false;
+    let isPaused = false;
+    let interruptions = 0;
+    let startedAt = null;
+    let currentTask = '';
+
+    // Load previous sessions
+    async function loadSessions() {
+      try {
+        const progress = await apiRequest('/api/progress');
+        if (progress.currentDay < 5 && !progress.completedDays.includes(5)) {
+          alert('Complete previous days first.');
+          window.location.href = '/dashboard.html';
+          return;
+        }
+
+        const sessions = await apiRequest('/api/focus');
+        renderSessions(sessions);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderSessions(sessions) {
+      const list = document.getElementById('sessionList');
+      if (!sessions || sessions.length === 0) {
+        list.innerHTML = '<p style="color:#64748b;">No sessions yet. Start your first focus session above.</p>';
+        return;
+      }
+
+      list.innerHTML = sessions.map(s => `
+        <div class="session-item">
+          <div>
+            <strong>${s.task}</strong>
+            <div class="session-meta">
+              ${s.actualDuration} min • ${s.interruptions} interruption${s.interruptions !== 1 ? 's' : ''}
+            </div>
+          </div>
+          <button class="btn btn-sm btn-danger" style="width:auto; padding:0.3rem 0.7rem; font-size:0.8rem;"
+                  onclick="deleteSession('${s._id}')">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    function updateDisplay() {
+      const mins = Math.floor(remainingSeconds / 60);
+      const secs = remainingSeconds % 60;
+      document.getElementById('timerDisplay').textContent = 
+        `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+      const task = document.getElementById('taskInput').value.trim();
+      if (!task) {
+        alert('Please enter what you will focus on.');
+        return;
+      }
+
+      currentTask = task;
+      totalSeconds = Number(document.getElementById('durationSelect').value) * 60;
+      remainingSeconds = totalSeconds;
+      interruptions = 0;
+      startedAt = new Date();
+      isRunning = true;
+      isPaused = false;
+
+      document.getElementById('setupForm').style.display = 'none';
+      document.getElementById('startBtn').style.display = 'none';
+      document.getElementById('pauseBtn').style.display = 'inline-block';
+      document.getElementById('stopBtn').style.display = 'inline-block';
+      document.getElementById('interruptionBox').style.display = 'block';
+      document.getElementById('statusText').textContent = `Focusing on: ${currentTask}`;
+      document.getElementById('interruptCount').textContent = '0';
+
+      timerInterval = setInterval(() => {
+        if (remainingSeconds <= 0) {
+          clearInterval(timerInterval);
+          finishSession(true);
+          return;
+        }
+        remainingSeconds--;
+        updateDisplay();
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(timerInterval);
+      isPaused = true;
+      document.getElementById('pauseBtn').style.display = 'none';
+      document.getElementById('resumeBtn').style.display = 'inline-block';
+      document.getElementById('statusText').textContent = 'Paused';
+    }
+
+    function resumeTimer() {
+      isPaused = false;
+      document.getElementById('resumeBtn').style.display = 'none';
+      document.getElementById('pauseBtn').style.display = 'inline-block';
+      document.getElementById('statusText').textContent = `Focusing on: ${currentTask}`;
+
+      timerInterval = setInterval(() => {
+        if (remainingSeconds <= 0) {
+          clearInterval(timerInterval);
+          finishSession(true);
+          return;
+        }
+        remainingSeconds--;
+        updateDisplay();
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (!confirm('End this focus session now?')) return;
+      clearInterval(timerInterval);
+      finishSession(false);
+    }
+
+    function addInterruption() {
+      interruptions++;
+      document.getElementById('interruptCount').textContent = interruptions;
+    }
+
+    async function finishSession(completedNaturally) {
+      isRunning = false;
+      const actualMinutes = Math.round((totalSeconds - remainingSeconds) / 60);
+
+      try {
+        await apiRequest('/api/focus', {
+          method: 'POST',
+          body: {
+            task: currentTask,
+            plannedDuration: totalSeconds / 60,
+            actualDuration: actualMinutes,
+            interruptions,
+            startedAt,
+            endedAt: new Date(),
+            notes: completedNaturally ? 'Completed full session' : 'Ended early'
+          }
+        });
+
+        // Reset UI
+        document.getElementById('setupForm').style.display = 'grid';
+        document.getElementById('startBtn').style.display = 'inline-block';
+        document.getElementById('pauseBtn').style.display = 'none';
+        document.getElementById('resumeBtn').style.display = 'none';
+        document.getElementById('stopBtn').style.display = 'none';
+        document.getElementById('interruptionBox').style.display = 'none';
+        document.getElementById('statusText').textContent = 'Session saved! Ready for another.';
+        document.getElementById('taskInput').value = '';
+        
+        remainingSeconds = Number(document.getElementById('durationSelect').value) * 60;
+        updateDisplay();
+
+        loadSessions();
+      } catch (err) {
+        alert('Failed to save session: ' + err.message);
+      }
+    }
+
+    async function deleteSession(id) {
+      if (!confirm('Delete this session?')) return;
+      try {
+        await apiRequest(`/api/focus/${id}`, { method: 'DELETE' });
+        loadSessions();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function completeDay5() {
+      const sessions = await apiRequest('/api/focus');
+      if (!sessions || sessions.length === 0) {
+        document.getElementById('error').textContent = 'Please complete at least one focus session before finishing Day 5.';
+        document.getElementById('error').style.display = 'block';
+        return;
+      }
+
+      const btn = document.getElementById('completeBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const totalMinutes = sessions.reduce((sum, s) => sum + s.actualDuration, 0);
+        const totalInterruptions = sessions.reduce((sum, s) => sum + s.interruptions, 0);
+
+        await apiRequest('/api/progress/complete-day', {
+          method: 'PUT',
+          body: {
+            day: 5,
+            dayData: {
+              totalSessions: sessions.length,
+              totalFocusMinutes: totalMinutes,
+              totalInterruptions,
+              averageInterruptions: (totalInterruptions / sessions.length).toFixed(1)
+            }
+          }
+        });
+
+        document.getElementById('success').textContent = 'Day 5 completed! Redirecting...';
+        document.getElementById('success').style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1200);
+      } catch (err) {
+        document.getElementById('error').textContent = err.message;
+        document.getElementById('error').style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Complete Day 5';
+      }
+    }
+
+    // Update timer display when duration changes
+    document.getElementById('durationSelect').addEventListener('change', (e) => {
+      if (!isRunning) {
+        remainingSeconds = Number(e.target.value) * 60;
+        updateDisplay();
+      }
+    });
+
+    loadSessions();
+    updateDisplay();
+  </script>
+</body>
+</html>

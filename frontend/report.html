@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly Focus Report – FocusFlow</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .report-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .report-header h1 {
+      color: #38bdf8;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .score-badge {
+      display: inline-block;
+      background: #0c4a6e;
+      color: #7dd3fc;
+      padding: 0.5rem 1.25rem;
+      border-radius: 999px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 0.75rem;
+    }
+    .report-content {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 2rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      font-size: 1.05rem;
+      color: #e2e8f0;
+    }
+    .report-content h2, .report-content h3 {
+      color: #38bdf8;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+      justify-content: center;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #38bdf8;
+      color: #38bdf8;
+      width: auto;
+      padding: 0.7rem 1.5rem;
+    }
+    .btn-outline:hover {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 800px; padding-top: 2.5rem; padding-bottom: 3rem;">
+    
+    <div class="report-header">
+      <a href="/dashboard.html" style="color:#94a3b8; font-size:0.9rem;">← Back to Dashboard</a>
+      <h1>Weekly Focus Report</h1>
+      <div id="scoreBadge" class="score-badge" style="display:none;"></div>
+    </div>
+
+    <div id="loading" class="loading">Loading your report...</div>
+    <div id="reportContent" class="report-content" style="display:none;"></div>
+    <div id="error" class="error-message"></div>
+
+    <div class="actions" id="actions" style="display:none;">
+      <a href="/blueprint.html" class="btn btn-outline">View Focus Blueprint</a>
+      <a href="/dashboard.html" class="btn" style="width:auto; padding:0.7rem 1.5rem;">Back to Dashboard</a>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    async function loadReport() {
+      try {
+        const report = await apiRequest('/api/report');
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('reportContent').style.display = 'block';
+        document.getElementById('actions').style.display = 'flex';
+
+        // Show score
+        const badge = document.getElementById('scoreBadge');
+        badge.textContent = `Focus Score: ${report.focusScore} / 100`;
+        badge.style.display = 'inline-block';
+
+        // Display the report (convert simple markdown-like text)
+        let content = report.weeklyReport || 'No report content available.';
+        
+        // Very basic formatting
+        content = content
+          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+          .replace(/^# (.*$)/gim, '<h2>$1</h2>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\n/g, '<br>');
+
+        document.getElementById('reportContent').innerHTML = content;
+      } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').textContent = err.message || 'Report not found. Please generate it from the Dashboard first.';
+        document.getElementById('error').style.display = 'block';
+      }
+    }
+
+    loadReport();
+  </script>
+</body>
+</html>

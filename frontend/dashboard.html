@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,12 +15,14 @@
       flex-wrap: wrap;
       gap: 1rem;
     }
+
     .day-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 1rem;
       margin-bottom: 2rem;
     }
+
     .day-card {
       background: #1e293b;
       border-radius: 12px;
@@ -29,30 +32,37 @@
       transition: all 0.2s;
       cursor: pointer;
     }
+
     .day-card.locked {
       opacity: 0.45;
       cursor: not-allowed;
     }
+
     .day-card.completed {
       border-color: #22c55e;
     }
+
     .day-card.current {
       border-color: #38bdf8;
       box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
     }
+
     .day-card:hover:not(.locked) {
       transform: translateY(-3px);
     }
+
     .day-number {
       font-size: 1.5rem;
       font-weight: 700;
       color: #38bdf8;
       margin-bottom: 0.35rem;
     }
+
     .day-title {
       font-size: 0.85rem;
       color: #94a3b8;
     }
+
     .status-badge {
       display: inline-block;
       margin-top: 0.5rem;
@@ -60,9 +70,22 @@
       padding: 0.2rem 0.6rem;
       border-radius: 999px;
     }
-    .status-completed { background: #14532d; color: #86efac; }
-    .status-current { background: #0c4a6e; color: #7dd3fc; }
-    .status-locked { background: #334155; color: #94a3b8; }
+
+    .status-completed {
+      background: #14532d;
+      color: #86efac;
+    }
+
+    .status-current {
+      background: #0c4a6e;
+      color: #7dd3fc;
+    }
+
+    .status-locked {
+      background: #334155;
+      color: #94a3b8;
+    }
+
     .score-box {
       background: #1e293b;
       border-radius: 12px;
@@ -70,6 +93,7 @@
       text-align: center;
       margin-bottom: 2rem;
     }
+
     .score-value {
       font-size: 3rem;
       font-weight: 700;
@@ -77,9 +101,10 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container" style="max-width: 900px; padding-top: 2rem; padding-bottom: 3rem;">
-    
+
     <div class="dashboard-header">
       <div>
         <h1 style="color:#38bdf8; font-size:1.8rem;">FocusFlow</h1>
@@ -87,12 +112,24 @@
       </div>
       <button class="btn" style="width:auto; padding:0.6rem 1.2rem;" onclick="logout()">Logout</button>
     </div>
-
-    <!-- Focus Score (placeholder for now) -->
+    <!-- Focus Score -->
     <div class="score-box">
       <div style="color:#94a3b8; margin-bottom:0.3rem;">Your Focus Score</div>
       <div class="score-value" id="focusScore">—</div>
-      <div style="color:#64748b; font-size:0.9rem;">Complete all 7 days to unlock your score</div>
+      <div id="scoreMessage" style="color:#64748b; font-size:0.9rem;">Complete all 7 days to unlock your score</div>
+
+      <div id="reportActions" style="margin-top:1.25rem; display:none;">
+        <button class="btn" style="width:auto; padding:0.6rem 1.3rem; margin-right:0.5rem;" onclick="generateReport()">
+          Generate AI Report
+        </button>
+        <a href="/report.html" class="btn btn-outline" style="width:auto; padding:0.6rem 1.3rem; display:inline-block;">
+          View Report
+        </a>
+        <a href="/blueprint.html" class="btn btn-outline"
+          style="width:auto; padding:0.6rem 1.3rem; display:inline-block; margin-left:0.5rem;">
+          View Blueprint
+        </a>
+      </div>
     </div>
 
     <!-- Days Grid -->
@@ -102,8 +139,9 @@
     </div>
 
     <div style="background:#1e293b; border-radius:12px; padding:1.25rem; color:#94a3b8; font-size:0.95rem;">
-      <strong style="color:#e2e8f0;">How it works:</strong>  
-      Complete each day in order. You cannot skip days. After Day 7 you will receive your personalized Weekly Report and Focus Blueprint.
+      <strong style="color:#e2e8f0;">How it works:</strong>
+      Complete each day in order. You cannot skip days. After Day 7 you will receive your personalized Weekly Report and
+      Focus Blueprint.
     </div>
   </div>
 
@@ -131,6 +169,12 @@
         // Show score if available
         if (progress.focusScore !== null && progress.focusScore !== undefined) {
           document.getElementById('focusScore').textContent = progress.focusScore;
+          document.getElementById('scoreMessage').textContent = 'Based on your 7-day data';
+          document.getElementById('reportActions').style.display = 'block';
+        } else if (progress.isCompleted) {
+          document.getElementById('focusScore').textContent = '—';
+          document.getElementById('scoreMessage').textContent = 'Journey completed! Generate your score & report.';
+          document.getElementById('reportActions').style.display = 'block';
         }
 
         const grid = document.getElementById('dayGrid');
@@ -139,7 +183,7 @@
         for (let day = 1; day <= 7; day++) {
           const isCompleted = progress.completedDays.includes(day);
           const isCurrent = progress.currentDay === day && !progress.isCompleted;
-          const isLocked = day > progress.currentDay;
+          const isLocked = day > progress.currentDay && !progress.isCompleted;
 
           let statusClass = 'locked';
           let statusText = 'Locked';
@@ -158,10 +202,10 @@
           const card = document.createElement('div');
           card.className = `day-card ${statusClass}`;
           card.innerHTML = `
-            <div class="day-number">Day ${day}</div>
-            <div class="day-title">${dayTitles[day]}</div>
-            <div class="status-badge ${statusBadge}">${statusText}</div>
-          `;
+        <div class="day-number">Day ${day}</div>
+        <div class="day-title">${dayTitles[day]}</div>
+        <div class="status-badge ${statusBadge}">${statusText}</div>
+      `;
 
           if (!isLocked) {
             card.onclick = () => {
@@ -177,6 +221,27 @@
       }
     }
 
+    async function generateReport() {
+      const btn = event.target;
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
+
+      try {
+        const report = await apiRequest('/api/report/generate', { method: 'POST' });
+
+        document.getElementById('focusScore').textContent = report.focusScore;
+        document.getElementById('scoreMessage').textContent = 'Based on your 7-day data';
+
+        alert('Report & Blueprint generated successfully!');
+        btn.textContent = 'Generate AI Report';
+        btn.disabled = false;
+      } catch (err) {
+        alert('Error: ' + err.message);
+        btn.textContent = 'Generate AI Report';
+        btn.disabled = false;
+      }
+    }
+
     function logout() {
       removeToken();
       window.location.href = '/login.html';
@@ -185,4 +250,5 @@
     loadDashboard();
   </script>
 </body>
+
 </html>

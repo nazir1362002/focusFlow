@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 6 – Information Diet | FocusFlow</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .day-header { margin-bottom: 2rem; }
+    .day-header h1 { color: #38bdf8; font-size: 1.8rem; margin-bottom: 0.3rem; }
+
+    .info-form {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 0.75rem;
+      align-items: end;
+    }
+    @media (max-width: 700px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+    }
+
+    .analysis-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 600px) {
+      .analysis-box { grid-template-columns: 1fr; }
+    }
+    .analysis-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .analysis-card.useful { border-left: 4px solid #22c55e; }
+    .analysis-card.waste { border-left: 4px solid #ef4444; }
+    .big-number {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin: 0.5rem 0;
+    }
+    .useful .big-number { color: #86efac; }
+    .waste .big-number { color: #fca5a5; }
+
+    .record-item {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .record-item.useful { border-left: 4px solid #22c55e; }
+    .record-item.waste { border-left: 4px solid #ef4444; }
+    .record-meta { font-size: 0.85rem; color: #94a3b8; }
+
+    .btn-sm {
+      padding: 0.3rem 0.7rem;
+      font-size: 0.8rem;
+      width: auto;
+      border-radius: 6px;
+    }
+    .btn-danger { background: #7f1d1d; color: #fecaca; }
+
+    .actions-footer {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+    .btn-secondary-outline {
+      background: transparent;
+      border: 2px solid #64748b;
+      color: #e2e8f0;
+      width: auto;
+      padding: 0.75rem 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 800px; padding-top: 2rem; padding-bottom: 3rem;">
+    
+    <div class="day-header">
+      <a href="/dashboard.html" style="color:#94a3b8; font-size:0.9rem;">← Back to Dashboard</a>
+      <h1>Day 6 – Information Diet</h1>
+      <p style="color:#94a3b8;">Track what information you consume and whether it is useful.</p>
+    </div>
+
+    <div id="error" class="error-message"></div>
+    <div id="success" class="success-message"></div>
+
+    <!-- Add Record Form -->
+    <div class="info-form">
+      <h3 style="margin-bottom:1rem;">Log an Information Activity</h3>
+      <form id="infoForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Activity</label>
+            <input type="text" id="activity" placeholder="e.g. YouTube, Programming tutorial, Twitter..." required />
+          </div>
+          <div class="form-group">
+            <label>Duration (minutes)</label>
+            <input type="number" id="duration" min="1" placeholder="30" required />
+          </div>
+          <div class="form-group">
+            <label>Was it useful?</label>
+            <select id="isUseful" required>
+              <option value="true">Yes – Useful</option>
+              <option value="false">No – Waste</option>
+            </select>
+          </div>
+          <button type="submit" class="btn" style="width:auto; padding:0.65rem 1.2rem;">Add</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Analysis -->
+    <div class="analysis-box" id="analysisBox" style="display:none;">
+      <div class="analysis-card useful">
+        <div>Useful Information</div>
+        <div class="big-number" id="usefulPercent">0%</div>
+        <div id="usefulStats" style="color:#94a3b8; font-size:0.9rem;"></div>
+      </div>
+      <div class="analysis-card waste">
+        <div>Unnecessary / Waste</div>
+        <div class="big-number" id="wastePercent">0%</div>
+        <div id="wasteStats" style="color:#94a3b8; font-size:0.9rem;"></div>
+      </div>
+    </div>
+
+    <!-- Records List -->
+    <h3 style="margin-bottom:1rem;">Your Records</h3>
+    <div id="recordsList">
+      <p style="color:#64748b;">No records yet. Log your first activity above.</p>
+    </div>
+
+    <div class="actions-footer">
+      <button class="btn btn-secondary-outline" onclick="window.location.href='/dashboard.html'">Save & Exit</button>
+      <button class="btn" id="completeBtn" style="width:auto; padding:0.75rem 1.8rem;" onclick="completeDay6()">
+        Complete Day 6
+      </button>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    let records = [];
+
+    async function loadData() {
+      try {
+        const progress = await apiRequest('/api/progress');
+        if (progress.currentDay < 6 && !progress.completedDays.includes(6)) {
+          alert('Complete previous days first.');
+          window.location.href = '/dashboard.html';
+          return;
+        }
+
+        records = await apiRequest('/api/info');
+        renderRecords();
+        if (records.length > 0) loadAnalysis();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderRecords() {
+      const list = document.getElementById('recordsList');
+      if (records.length === 0) {
+        list.innerHTML = '<p style="color:#64748b;">No records yet. Log your first activity above.</p>';
+        return;
+      }
+
+      list.innerHTML = records.map(r => `
+        <div class="record-item ${r.isUseful ? 'useful' : 'waste'}">
+          <div>
+            <strong>${r.activity}</strong>
+            <div class="record-meta">
+              ${r.duration} min • ${r.isUseful ? 'Useful' : 'Waste'}
+            </div>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="deleteRecord('${r._id}')">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    async function loadAnalysis() {
+      try {
+        const analysis = await apiRequest('/api/info/analysis');
+        document.getElementById('analysisBox').style.display = 'grid';
+
+        document.getElementById('usefulPercent').textContent = analysis.usefulPercentage + '%';
+        document.getElementById('wastePercent').textContent = analysis.wastePercentage + '%';
+
+        document.getElementById('usefulStats').textContent = 
+          `${analysis.usefulCount} activities • ${analysis.usefulMinutes} minutes`;
+        document.getElementById('wasteStats').textContent = 
+          `${analysis.wasteCount} activities • ${analysis.wasteMinutes} minutes`;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Add Record
+    document.getElementById('infoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const activity = document.getElementById('activity').value.trim();
+      const duration = document.getElementById('duration').value;
+      const isUseful = document.getElementById('isUseful').value === 'true';
+
+      try {
+        const newRecord = await apiRequest('/api/info', {
+          method: 'POST',
+          body: { activity, duration, isUseful }
+        });
+
+        records.unshift(newRecord);
+        document.getElementById('infoForm').reset();
+        renderRecords();
+        loadAnalysis();
+      } catch (err) {
+        document.getElementById('error').textContent = err.message;
+        document.getElementById('error').style.display = 'block';
+      }
+    });
+
+    async function deleteRecord(id) {
+      if (!confirm('Delete this record?')) return;
+      try {
+        await apiRequest(`/api/info/${id}`, { method: 'DELETE' });
+        records = records.filter(r => r._id !== id);
+        renderRecords();
+        if (records.length > 0) loadAnalysis();
+        else document.getElementById('analysisBox').style.display = 'none';
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function completeDay6() {
+      if (records.length === 0) {
+        document.getElementById('error').textContent = 'Please log at least a few activities before completing Day 6.';
+        document.getElementById('error').style.display = 'block';
+        return;
+      }
+
+      const btn = document.getElementById('completeBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const analysis = await apiRequest('/api/info/analysis');
+
+        await apiRequest('/api/progress/complete-day', {
+          method: 'PUT',
+          body: {
+            day: 6,
+            dayData: {
+              totalRecords: analysis.totalRecords,
+              usefulPercentage: analysis.usefulPercentage,
+              wastePercentage: analysis.wastePercentage,
+              usefulMinutes: analysis.usefulMinutes,
+              wasteMinutes: analysis.wasteMinutes
+            }
+          }
+        });
+
+        document.getElementById('success').textContent = 'Day 6 completed! Redirecting...';
+        document.getElementById('success').style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1200);
+      } catch (err) {
+        document.getElementById('error').textContent = err.message;
+        document.getElementById('error').style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Complete Day 6';
+      }
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

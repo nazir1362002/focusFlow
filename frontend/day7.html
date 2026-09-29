@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 7 – Final Review | FocusFlow</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .day-header { margin-bottom: 2rem; }
+    .day-header h1 { color: #38bdf8; font-size: 1.8rem; margin-bottom: 0.3rem; }
+
+    .journey-summary {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .journey-summary h3 {
+      margin-bottom: 1rem;
+      color: #e2e8f0;
+    }
+    .day-status {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #334155;
+    }
+    .day-status:last-child { border-bottom: none; }
+    .check {
+      color: #22c55e;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .reflection-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .reflection-card h3 { margin-bottom: 1rem; }
+    .reflection-card textarea {
+      width: 100%;
+      min-height: 140px;
+      padding: 1rem;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 1rem;
+      font-family: inherit;
+      resize: vertical;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 1.1rem;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 0.25rem;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+
+    .actions-footer {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+    .btn-secondary-outline {
+      background: transparent;
+      border: 2px solid #64748b;
+      color: #e2e8f0;
+      width: auto;
+      padding: 0.75rem 1.5rem;
+    }
+    .btn-primary {
+      background: #38bdf8;
+      color: #0f172a;
+      width: auto;
+      padding: 0.75rem 1.8rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 750px; padding-top: 2rem; padding-bottom: 3rem;">
+    
+    <div class="day-header">
+      <a href="/dashboard.html" style="color:#94a3b8; font-size:0.9rem;">← Back to Dashboard</a>
+      <h1>Day 7 – Final Review</h1>
+      <p style="color:#94a3b8;">Look back at your journey and write your final reflection.</p>
+    </div>
+
+    <div id="error" class="error-message"></div>
+    <div id="success" class="success-message"></div>
+
+    <!-- Journey Progress -->
+    <div class="journey-summary">
+      <h3>Your 7-Day Journey</h3>
+      <div id="journeyList">
+        <p style="color:#64748b;">Loading...</p>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <!-- Filled by JS -->
+    </div>
+
+    <!-- Final Reflection -->
+    <div class="reflection-card">
+      <h3>Final Reflection</h3>
+      <p style="color:#94a3b8; margin-bottom:1rem; font-size:0.95rem;">
+        What did you learn about your focus in these 7 days?  
+        What will you do differently going forward?
+      </p>
+      <textarea id="finalReflection" placeholder="Write your thoughts here..."></textarea>
+    </div>
+
+    <div class="actions-footer">
+      <button class="btn btn-secondary-outline" onclick="window.location.href='/dashboard.html'">Save & Exit</button>
+      <button class="btn btn-primary" id="completeBtn" onclick="completeDay7()">
+        Complete Journey & Generate Report
+      </button>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    const dayTitles = {
+      1: 'Self Discovery',
+      2: 'Goal Clarity',
+      3: 'Action Planning',
+      4: '80/20 Analysis',
+      5: 'Distraction Control',
+      6: 'Information Diet',
+      7: 'Final Review'
+    };
+
+    async function loadReview() {
+      try {
+        const progress = await apiRequest('/api/progress');
+
+        if (progress.currentDay < 7 && !progress.completedDays.includes(7)) {
+          // Allow access only if day 6 is done
+          if (!progress.completedDays.includes(6)) {
+            alert('Complete Day 6 first.');
+            window.location.href = '/dashboard.html';
+            return;
+          }
+        }
+
+        // Render journey checklist
+        const list = document.getElementById('journeyList');
+        list.innerHTML = '';
+        for (let d = 1; d <= 6; d++) {
+          const done = progress.completedDays.includes(d);
+          list.innerHTML += `
+            <div class="day-status">
+              <span class="check">${done ? '✓' : '○'}</span>
+              <span>Day ${d} – ${dayTitles[d]}</span>
+            </div>
+          `;
+        }
+
+        // Load existing reflection if any
+        if (progress.dayData?.day7?.finalReflection) {
+          document.getElementById('finalReflection').value = progress.dayData.day7.finalReflection;
+        }
+
+        // Load quick stats
+        await loadStats();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadStats() {
+      try {
+        const [goals, actions, tasks, sessions, info] = await Promise.all([
+          apiRequest('/api/goals').catch(() => []),
+          apiRequest('/api/actions').catch(() => []),
+          apiRequest('/api/tasks').catch(() => []),
+          apiRequest('/api/focus').catch(() => []),
+          apiRequest('/api/info').catch(() => [])
+        ]);
+
+        const totalFocusMin = sessions.reduce((s, x) => s + (x.actualDuration || 0), 0);
+        const highImpact = tasks.filter(t => t.impact === 'High').length;
+
+        document.getElementById('statsGrid').innerHTML = `
+          <div class="stat-card">
+            <div class="stat-value">${goals.length}</div>
+            <div class="stat-label">Goals</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${actions.length}</div>
+            <div class="stat-label">Actions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${highImpact}</div>
+            <div class="stat-label">High-Impact Tasks</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${sessions.length}</div>
+            <div class="stat-label">Focus Sessions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${totalFocusMin}</div>
+            <div class="stat-label">Focus Minutes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${info.length}</div>
+            <div class="stat-label">Info Records</div>
+          </div>
+        `;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function completeDay7() {
+      const reflection = document.getElementById('finalReflection').value.trim();
+
+      if (!reflection) {
+        document.getElementById('error').textContent = 'Please write your final reflection before completing the journey.';
+        document.getElementById('error').style.display = 'block';
+        return;
+      }
+
+      const btn = document.getElementById('completeBtn');
+      btn.disabled = true;
+      btn.textContent = 'Completing Journey...';
+
+      try {
+        await apiRequest('/api/progress/complete-day', {
+          method: 'PUT',
+          body: {
+            day: 7,
+            dayData: {
+              finalReflection: reflection,
+              completedAt: new Date().toISOString()
+            }
+          }
+        });
+
+        document.getElementById('success').textContent = 'Journey completed! Generating your Focus Score and Report...';
+        document.getElementById('success').style.display = 'block';
+
+        // Redirect to a temporary "generating" state or dashboard
+        // We will build the score + report next
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1500);
+      } catch (err) {
+        document.getElementById('error').textContent = err.message;
+        document.getElementById('error').style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Complete Journey & Generate Report';
+      }
+    }
+
+    loadReview();
+  </script>
+</body>
+</html>
