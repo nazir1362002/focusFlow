@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Say No Simulator – FocusFlow</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { color: #38bdf8; font-size: 1.8rem; margin-bottom: 0.3rem; }
+
+    .scenario-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-left: 4px solid #38bdf8;
+    }
+    .scenario-card h3 {
+      margin-bottom: 0.75rem;
+      font-size: 1.05rem;
+    }
+    .scenario-text {
+      color: #cbd5e1;
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 110px;
+      padding: 0.9rem 1rem;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 1rem;
+      font-family: inherit;
+      resize: vertical;
+      margin-bottom: 1rem;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .history-item {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .history-item .scenario {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      margin-bottom: 0.5rem;
+    }
+    .history-item .response {
+      margin-bottom: 0.75rem;
+    }
+    .history-item .feedback {
+      background: #0f172a;
+      padding: 0.9rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #86efac;
+      border-left: 3px solid #22c55e;
+    }
+
+    .actions {
+      margin-top: 2rem;
+    }
+    .btn-secondary-outline {
+      background: transparent;
+      border: 2px solid #64748b;
+      color: #e2e8f0;
+      width: auto;
+      padding: 0.7rem 1.4rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 750px; padding-top: 2rem; padding-bottom: 3rem;">
+    
+    <div class="page-header">
+      <a href="/dashboard.html" style="color:#94a3b8; font-size:0.9rem;">← Back to Dashboard</a>
+      <h1>Say No Simulator</h1>
+      <p style="color:#94a3b8;">Practice protecting your focus by responding to common distractions.</p>
+    </div>
+
+    <div id="error" class="error-message"></div>
+    <div id="success" class="success-message"></div>
+
+    <!-- Current Scenario -->
+    <div class="scenario-card" id="scenarioCard">
+      <h3>Scenario</h3>
+      <div class="scenario-text" id="scenarioText">Loading scenario...</div>
+
+      <textarea id="userResponse" placeholder="How would you respond to protect your focus?"></textarea>
+
+      <div class="btn-row">
+        <button class="btn" style="width:auto; padding:0.65rem 1.3rem;" onclick="submitResponse(false)">
+          Submit Response
+        </button>
+        <button class="btn" style="width:auto; padding:0.65rem 1.3rem; background:#0d9488;" onclick="submitResponse(true)">
+          Submit + Get AI Feedback
+        </button>
+        <button class="btn btn-secondary-outline" style="width:auto;" onclick="nextScenario()">
+          Next Scenario
+        </button>
+      </div>
+    </div>
+
+    <!-- History -->
+    <h3 style="margin: 2rem 0 1rem;">Your Previous Responses</h3>
+    <div id="historyList">
+      <p style="color:#64748b;">No responses yet.</p>
+    </div>
+
+    <div class="actions">
+      <a href="/dashboard.html" class="btn btn-secondary-outline">Back to Dashboard</a>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    let scenarios = [];
+    let currentIndex = 0;
+
+    async function loadScenarios() {
+      try {
+        scenarios = await apiRequest('/api/sayno/scenarios');
+        showScenario();
+        loadHistory();
+      } catch (err) {
+        document.getElementById('scenarioText').textContent = 'Failed to load scenarios.';
+      }
+    }
+
+    function showScenario() {
+      if (scenarios.length === 0) return;
+      document.getElementById('scenarioText').textContent = scenarios[currentIndex];
+      document.getElementById('userResponse').value = '';
+    }
+
+    function nextScenario() {
+      currentIndex = (currentIndex + 1) % scenarios.length;
+      showScenario();
+    }
+
+    async function submitResponse(getFeedback) {
+      const response = document.getElementById('userResponse').value.trim();
+      if (!response) {
+        alert('Please write a response first.');
+        return;
+      }
+
+      const scenario = scenarios[currentIndex];
+
+      try {
+        const entry = await apiRequest('/api/sayno', {
+          method: 'POST',
+          body: { scenario, userResponse: response, getFeedback }
+        });
+
+        document.getElementById('success').textContent = getFeedback 
+          ? 'Response saved with AI feedback!' 
+          : 'Response saved!';
+        document.getElementById('success').style.display = 'block';
+        setTimeout(() => document.getElementById('success').style.display = 'none', 2500);
+
+        document.getElementById('userResponse').value = '';
+        loadHistory();
+      } catch (err) {
+        document.getElementById('error').textContent = err.message;
+        document.getElementById('error').style.display = 'block';
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        const history = await apiRequest('/api/sayno');
+        const list = document.getElementById('historyList');
+
+        if (!history || history.length === 0) {
+          list.innerHTML = '<p style="color:#64748b;">No responses yet.</p>';
+          return;
+        }
+
+        list.innerHTML = history.map(item => `
+          <div class="history-item">
+            <div class="scenario"><strong>Scenario:</strong> ${item.scenario}</div>
+            <div class="response"><strong>Your response:</strong> ${item.userResponse}</div>
+            ${item.aiFeedback ? `<div class="feedback"><strong>AI Feedback:</strong><br>${item.aiFeedback}</div>` : ''}
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadScenarios();
+  </script>
+</body>
+</html>

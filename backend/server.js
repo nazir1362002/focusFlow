@@ -26,7 +26,7 @@ app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/focus', require('./routes/focus'));
 app.use('/api/info', require('./routes/info'));
 app.use('/api/report', require('./routes/report'));
-
+app.use('/api/sayno', require('./routes/sayno'));
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({
