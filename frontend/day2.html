@@ -175,6 +175,7 @@
           window.location.href = '/dashboard.html';
           return;
         }
+        
 
         goals = await apiRequest('/api/goals');
         renderGoals();

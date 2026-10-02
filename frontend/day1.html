@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,21 +10,25 @@
     .day-header {
       margin-bottom: 2rem;
     }
+
     .day-header h1 {
       color: #38bdf8;
       font-size: 1.8rem;
       margin-bottom: 0.3rem;
     }
+
     .question-card {
       background: #1e293b;
       border-radius: 12px;
       padding: 1.5rem;
       margin-bottom: 1.25rem;
     }
+
     .question-card h3 {
       margin-bottom: 0.75rem;
       font-size: 1.05rem;
     }
+
     .question-card textarea,
     .question-card select,
     .question-card input {
@@ -36,16 +41,19 @@
       font-size: 1rem;
       font-family: inherit;
     }
+
     .question-card textarea {
       min-height: 90px;
       resize: vertical;
     }
+
     .actions {
       display: flex;
       gap: 1rem;
       margin-top: 2rem;
       flex-wrap: wrap;
     }
+
     .btn-secondary-outline {
       background: transparent;
       border: 2px solid #64748b;
@@ -53,14 +61,16 @@
       width: auto;
       padding: 0.75rem 1.5rem;
     }
+
     .btn-secondary-outline:hover {
       border-color: #94a3b8;
     }
   </style>
 </head>
+
 <body>
   <div class="container" style="max-width: 700px; padding-top: 2rem; padding-bottom: 3rem;">
-    
+
     <div class="day-header">
       <a href="/dashboard.html" style="color:#94a3b8; font-size:0.9rem;">← Back to Dashboard</a>
       <h1>Day 1 – Self Discovery</h1>
@@ -74,7 +84,9 @@
       <!-- Question 1 -->
       <div class="question-card">
         <h3>1. What is the main reason you want to improve your focus?</h3>
-        <textarea id="mainReason" placeholder="e.g. I want to finish my projects on time, reduce anxiety, get better grades..." required></textarea>
+        <textarea id="mainReason"
+          placeholder="e.g. I want to finish my projects on time, reduce anxiety, get better grades..."
+          required></textarea>
       </div>
 
       <!-- Question 2 -->
@@ -98,13 +110,15 @@
       <!-- Question 3 -->
       <div class="question-card">
         <h3>3. What is your biggest distraction right now?</h3>
-        <input type="text" id="biggestDistraction" placeholder="e.g. Social media, YouTube, phone notifications, overthinking..." required />
+        <input type="text" id="biggestDistraction"
+          placeholder="e.g. Social media, YouTube, phone notifications, overthinking..." required />
       </div>
 
       <!-- Question 4 -->
       <div class="question-card">
         <h3>4. What does “better focus” look like for you in 7 days?</h3>
-        <textarea id="vision" placeholder="Describe the ideal outcome after completing this journey..." required></textarea>
+        <textarea id="vision" placeholder="Describe the ideal outcome after completing this journey..."
+          required></textarea>
       </div>
 
       <!-- Question 5 -->
@@ -149,6 +163,7 @@
           window.location.href = '/dashboard.html';
           return;
         }
+
 
         const data = progress.dayData?.day1 || {};
         if (data.mainReason) document.getElementById('mainReason').value = data.mainReason;
@@ -221,4 +236,5 @@
     loadExistingData();
   </script>
 </body>
+
 </html>
