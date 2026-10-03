@@ -7,10 +7,10 @@
   <link rel="stylesheet" href="css/style.css" />
   <style>
     .day-header { margin-bottom: 2rem; }
-    .day-header h1 { color: #38bdf8; font-size: 1.8rem; margin-bottom: 0.3rem; }
+    .day-header h1 { color: #0f766e; font-size: 1.8rem; margin-bottom: 0.3rem; }
 
     .task-form {
-      background: #1e293b;
+      background: #ffffff;
       border-radius: 12px;
       padding: 1.5rem;
       margin-bottom: 2rem;
@@ -28,15 +28,15 @@
       display: block;
       margin-bottom: 0.3rem;
       font-size: 0.85rem;
-      color: #94a3b8;
+      color: #64748b;
     }
     .form-group input, .form-group select {
       width: 100%;
       padding: 0.65rem 0.9rem;
-      border: 1px solid #334155;
+      border: 1px solid #e2e8f0;
       border-radius: 8px;
-      background: #0f172a;
-      color: #f1f5f9;
+      background: #f8fafc;
+      color: #12203a;
       font-size: 0.95rem;
     }
 
@@ -50,7 +50,7 @@
       .analysis-box { grid-template-columns: 1fr; }
     }
     .analysis-card {
-      background: #1e293b;
+      background: #ffffff;
       border-radius: 12px;
       padding: 1.25rem;
     }
@@ -59,7 +59,7 @@
     .low { border-left: 4px solid #ef4444; }
 
     .task-item {
-      background: #1e293b;
+      background: #ffffff;
       border-radius: 10px;
       padding: 1rem 1.2rem;
       margin-bottom: 0.6rem;
@@ -72,14 +72,14 @@
     .task-item.medium { border-left: 4px solid #eab308; }
     .task-item.low { border-left: 4px solid #ef4444; }
 
-    .task-meta { font-size: 0.85rem; color: #94a3b8; }
+    .task-meta { font-size: 0.85rem; color: #64748b; }
     .btn-sm {
       padding: 0.3rem 0.7rem;
       font-size: 0.8rem;
       width: auto;
       border-radius: 6px;
     }
-    .btn-danger { background: #7f1d1d; color: #fecaca; }
+    .btn-danger { background: #fee2e2; color: #fecaca; }
 
     .actions-footer {
       display: flex;
@@ -100,9 +100,9 @@
   <div class="container" style="max-width: 800px; padding-top: 2rem; padding-bottom: 3rem;">
     
     <div class="day-header">
-      <a href="/dashboard.html" style="color:#94a3b8; font-size:0.9rem;">← Back to Dashboard</a>
+      <a href="/dashboard.html" style="color:#64748b; font-size:0.9rem;">← Back to Dashboard</a>
       <h1>Day 4 – 80/20 Task Analyzer</h1>
-      <p style="color:#94a3b8;">Identify which tasks give you the highest impact for your time.</p>
+      <p style="color:#64748b;">Identify which tasks give you the highest impact for your time.</p>
     </div>
 
     <div id="error" class="error-message"></div>
@@ -139,7 +139,7 @@
       <div class="analysis-card high">
         <h3>High-Impact Activities</h3>
         <div id="highList"></div>
-        <p style="margin-top:0.75rem; color:#86efac; font-size:0.9rem;" id="highStats"></p>
+        <p style="margin-top:0.75rem; color:#166534; font-size:0.9rem;" id="highStats"></p>
       </div>
       <div class="analysis-card low">
         <h3>Low-Impact Activities</h3>

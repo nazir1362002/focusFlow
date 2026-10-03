@@ -7,10 +7,10 @@
   <link rel="stylesheet" href="css/style.css" />
   <style>
     .day-header { margin-bottom: 2rem; }
-    .day-header h1 { color: #38bdf8; font-size: 1.8rem; margin-bottom: 0.3rem; }
+    .day-header h1 { color: #0f766e; font-size: 1.8rem; margin-bottom: 0.3rem; }
 
     .info-form {
-      background: #1e293b;
+      background: #ffffff;
       border-radius: 12px;
       padding: 1.5rem;
       margin-bottom: 2rem;
@@ -28,15 +28,15 @@
       display: block;
       margin-bottom: 0.3rem;
       font-size: 0.85rem;
-      color: #94a3b8;
+      color: #64748b;
     }
     .form-group input, .form-group select {
       width: 100%;
       padding: 0.65rem 0.9rem;
-      border: 1px solid #334155;
+      border: 1px solid #e2e8f0;
       border-radius: 8px;
-      background: #0f172a;
-      color: #f1f5f9;
+      background: #f8fafc;
+      color: #12203a;
       font-size: 0.95rem;
     }
 
@@ -50,7 +50,7 @@
       .analysis-box { grid-template-columns: 1fr; }
     }
     .analysis-card {
-      background: #1e293b;
+      background: #ffffff;
       border-radius: 12px;
       padding: 1.25rem;
       text-align: center;
@@ -62,11 +62,11 @@
       font-weight: 700;
       margin: 0.5rem 0;
     }
-    .useful .big-number { color: #86efac; }
+    .useful .big-number { color: #166534; }
     .waste .big-number { color: #fca5a5; }
 
     .record-item {
-      background: #1e293b;
+      background: #ffffff;
       border-radius: 10px;
       padding: 1rem 1.2rem;
       margin-bottom: 0.6rem;
@@ -77,7 +77,7 @@
     }
     .record-item.useful { border-left: 4px solid #22c55e; }
     .record-item.waste { border-left: 4px solid #ef4444; }
-    .record-meta { font-size: 0.85rem; color: #94a3b8; }
+    .record-meta { font-size: 0.85rem; color: #64748b; }
 
     .btn-sm {
       padding: 0.3rem 0.7rem;
@@ -85,7 +85,7 @@
       width: auto;
       border-radius: 6px;
     }
-    .btn-danger { background: #7f1d1d; color: #fecaca; }
+    .btn-danger { background: #fee2e2; color: #fecaca; }
 
     .actions-footer {
       display: flex;
@@ -106,9 +106,9 @@
   <div class="container" style="max-width: 800px; padding-top: 2rem; padding-bottom: 3rem;">
     
     <div class="day-header">
-      <a href="/dashboard.html" style="color:#94a3b8; font-size:0.9rem;">← Back to Dashboard</a>
+      <a href="/dashboard.html" style="color:#64748b; font-size:0.9rem;">← Back to Dashboard</a>
       <h1>Day 6 – Information Diet</h1>
-      <p style="color:#94a3b8;">Track what information you consume and whether it is useful.</p>
+      <p style="color:#64748b;">Track what information you consume and whether it is useful.</p>
     </div>
 
     <div id="error" class="error-message"></div>
@@ -144,12 +144,12 @@
       <div class="analysis-card useful">
         <div>Useful Information</div>
         <div class="big-number" id="usefulPercent">0%</div>
-        <div id="usefulStats" style="color:#94a3b8; font-size:0.9rem;"></div>
+        <div id="usefulStats" style="color:#64748b; font-size:0.9rem;"></div>
       </div>
       <div class="analysis-card waste">
         <div>Unnecessary / Waste</div>
         <div class="big-number" id="wastePercent">0%</div>
-        <div id="wasteStats" style="color:#94a3b8; font-size:0.9rem;"></div>
+        <div id="wasteStats" style="color:#64748b; font-size:0.9rem;"></div>
       </div>
     </div>
 
